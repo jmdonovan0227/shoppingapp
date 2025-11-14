@@ -5,52 +5,57 @@ import { Image } from "expo-image";
 import { COLORS } from "@/utils/colors";
 
 interface ProductCardProps {
-    product: Product;
+  product: Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-    const router = useRouter();
+  const router = useRouter();
 
-    return (
-        <Pressable style={styles.productCard} onPress={() => router.push(`/product/${product.id}`)}>
-            <Image style={styles.image} source={{ uri: product.image }} />
+  return (
+    <Pressable
+      style={styles.productCard}
+      onPress={() => router.push(`/product/${product.id}`)}
+    >
+      <Image style={styles.image} source={{ uri: product.image }} />
 
-            <View style={styles.productInfo}>
-                <Text style={styles.productTitle} numberOfLines={2}>{product.title}</Text>
-                <Text style={styles.productPrice}>{product.price}</Text>
-            </View>
-        </Pressable>
-    );
+      <View style={styles.productInfo}>
+        <Text style={styles.productTitle} numberOfLines={2}>
+          {product.title}
+        </Text>
+        <Text style={styles.productPrice}>${product.price.toFixed(2)}</Text>
+      </View>
+    </Pressable>
+  );
 }
 
 const styles = StyleSheet.create({
-    productCard: {
-        flex: 1,
-        margin: 8,
-        gap: 8,
-        backgroundColor: 'white',
-        padding: 12,
-        borderRadius: 12,
-        boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.1)',
-    },
+  productCard: {
+    flex: 1,
+    margin: 8,
+    gap: 8,
+    backgroundColor: "white",
+    padding: 12,
+    borderRadius: 12,
+    boxShadow: "0 0 10px 0 rgba(0, 0, 0, 0.1)",
+  },
 
-    image: {
-        width: '100%',
-        height: 150,
-    },
+  image: {
+    width: "100%",
+    height: 150,
+  },
 
-    productInfo: {
-        gap: 4,
-    },
+  productInfo: {
+    gap: 4,
+  },
 
-    productTitle: {
-        fontSize: 14,
-        fontWeight: '500',
-    },
+  productTitle: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
 
-    productPrice: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: COLORS.primary,
-    },
+  productPrice: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.primary,
+  },
 });

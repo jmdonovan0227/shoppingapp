@@ -17,12 +17,25 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <Stack>
         <Stack.Screen
-          name='index'
+          name="index"
           options={{
-            title: 'Jake\'s Shopping App',
+            title: "Jake's Shopping App",
             headerShadowVisible: false,
+            headerSearchBarOptions: {
+              placeholder: "Search products...",
+              hideWhenScrolling: false,
+              hideNavigationBar: false,
+            },
           }}
-        /> 
+        />
+
+        <Stack.Screen
+          name="product/[id]"
+          options={{
+            title: "",
+            headerBackTitle: "Products",
+          }}
+        />
       </Stack>
     </QueryClientProvider>
   );

@@ -1,88 +1,146 @@
 import { Text, View, StyleSheet, ScrollView, Pressable } from "react-native";
-import { getProducts, getCategories } from "@/utils/api";
+import { Product, getProducts, getCategories } from "@/utils/api";
 import { useQuery } from "@tanstack/react-query";
 import { FlashList } from "@shopify/flash-list";
 import { useState, useCallback, useMemo } from "react";
-import { Product } from "@/utils/api";
 import ProductCard from "@/components/ProductCard";
+import { COLORS } from "@/utils/colors";
+import { Stack } from "expo-router";
+import { ProductShimmerGrid } from "@/components/ProductListShimmer";
 
 // 1) Get function from utils/api.ts
 // 2) Pass function as queryFn
 // 3) Store result in queryKey
 export default function Index() {
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const { data: products, refetch, isRefetching } = useQuery({
-    queryKey: ['products'], // data is cached under this key!
+  const {
+    data: products,
+    isLoading,
+    refetch,
+    isRefetching,
+  } = useQuery({
+    queryKey: ["products"], // data is cached under this key!
     queryFn: getProducts,
   });
 
   const { data: categories = [] } = useQuery({
-    queryKey: ['categories'],
+    queryKey: ["categories"],
     queryFn: getCategories,
   });
 
-  const allCategories = ['all', ...categories];
+  const allCategories = ["all", ...categories];
 
-  const filteredProducts = useMemo(() => products?.filter((product) => {
-    if(selectedCategory !== 'all') {
-      return product.category === selectedCategory;
-    }
+  const filteredProducts = useMemo(
+    () =>
+      products?.filter((product) => {
+        if (selectedCategory !== "all") {
+          return product.category === selectedCategory;
+        }
 
-    return product.title.toLowerCase().includes(searchQuery.toLowerCase());
-  }), [products, searchQuery, selectedCategory]);
-  
-  const renderProduct = useCallback(({ item } : { item: Product }) => {
+        return product.title.toLowerCase().includes(searchQuery.toLowerCase());
+      }),
+    [products, searchQuery, selectedCategory]
+  );
+
+  const renderProduct = useCallback(({ item }: { item: Product }) => {
     return <ProductCard product={item} />;
   }, []);
 
   // FlashList is a more performant list component than FlatList for displaying large lists of data.
   return (
     <View style={styles.container}>
+      <Stack.Screen
+        options={{
+          headerSearchBarOptions: {
+            onChangeText: (event: any) =>
+              setSearchQuery(event.nativeEvent.text),
+          },
+        }}
+      />
       <View style={styles.categoryContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScrollView}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.categoryScrollView}
+        >
           {allCategories.map((category) => (
-            <Pressable 
-              key={category} 
-              style={styles.categoryButton} 
+            <Pressable
+              key={category}
+              style={[
+                styles.categoryButton,
+                selectedCategory === category && styles.selectedCategory,
+              ]}
               onPress={() => setSelectedCategory(category)}
             >
-              <Text>{category}</Text>
+              <Text
+                style={[
+                  styles.categoryButtonText,
+                  selectedCategory === category && styles.selectedCategoryText,
+                ]}
+              >
+                {category}
+              </Text>
             </Pressable>
           ))}
         </ScrollView>
       </View>
 
-      <FlashList
-        data={filteredProducts}
-        renderItem={renderProduct}
-        keyExtractor={(item) => item.id.toString()}
-        numColumns={2}
-        contentContainerStyle={{ padding: 8 }}
-        onRefresh={refetch}
-        refreshing={isRefetching}
-      />
+      {isLoading ? (
+        <ProductShimmerGrid />
+      ) : (
+        <FlashList
+          data={filteredProducts}
+          renderItem={renderProduct}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={2}
+          contentContainerStyle={{ padding: 8 }}
+          onRefresh={refetch}
+          refreshing={isRefetching}
+        />
+      )}
     </View>
   );
 }
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: "white",
   },
 
   categoryContainer: {
     height: 60,
     zIndex: 1,
-    boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.1)',
+    boxShadow: "0 0 10px 0 rgba(0, 0, 0, 0.1)",
   },
 
   categoryScrollView: {
     paddingHorizontal: 10,
   },
 
-  categoryButton: {},
+  categoryButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginHorizontal: 4,
+    backgroundColor: "#f0f0f0",
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    alignSelf: "center",
+  },
+
+  categoryButtonText: {
+    fontSize: 14,
+    color: "#666",
+  },
+
+  selectedCategory: {
+    backgroundColor: COLORS.primary,
+  },
+
+  selectedCategoryText: {
+    color: "white",
+  },
 });
