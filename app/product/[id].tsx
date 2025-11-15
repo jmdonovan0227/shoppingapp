@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
+  Share,
 } from "react-native";
 import { useLocalSearchParams, Stack } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
@@ -14,10 +15,12 @@ import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { COLORS } from "@/utils/colors";
+import useCartStore from "@/store/cart-store";
 
 export default function ProductDetails() {
   const { id } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
+  const { addProduct } = useCartStore();
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["product", id],
@@ -34,11 +37,36 @@ export default function ProductDetails() {
 
   const handleAddToCart = () => {
     console.log("Adding to cart");
+    addProduct(product);
+  };
+
+  const onShare = async () => {
+    const url = `shoppingapp://product/${product.id}`;
+
+    if (Platform.OS === "ios") {
+      await Share.share({
+        url,
+        message: `Check out this product: ${product.title}`,
+      });
+    } else {
+      await Share.share({
+        url,
+      });
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: product.title }} />
+      <Stack.Screen
+        options={{
+          title: product.title,
+          headerRight: () => (
+            <TouchableOpacity onPress={onShare}>
+              <Ionicons name="share-outline" size={24} color={COLORS.primary} />
+            </TouchableOpacity>
+          ),
+        }}
+      />
       <ScrollView>
         <Image
           source={{ uri: product.image }}
